@@ -22,6 +22,16 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "keyvaluestore",
+    srcs = [
+        "keyvaluestore.cc",
+    ],
+    hdrs = [
+        "keyvaluestore.h",
+    ],
+)
+
 cc_test(
     name = "tensor_utils_test",
     srcs = [
@@ -50,6 +60,7 @@ iree_pjrt_cc_library(
     deps = [
         ":compiler",
         ":debugging",
+        ":keyvaluestore",
         ":tensor_utils",
         "@iree_core//runtime/src/iree/base",
         "@iree_core//runtime/src/iree/base:tracing",
