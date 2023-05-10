@@ -32,6 +32,22 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "channel_provider",
+    srcs = [
+        "channel_provider.cc",
+    ],
+    hdrs = [
+        "channel_provider.h",
+    ],
+    deps = [
+        ":keyvaluestore",
+        "@iree_core//runtime/src/iree/base",
+        "@iree_core//runtime/src/iree/base:tracing",
+        "@iree_core//runtime/src/iree/hal",
+    ],
+)
+
 cc_test(
     name = "tensor_utils_test",
     srcs = [
@@ -58,6 +74,7 @@ iree_pjrt_cc_library(
         "platform.h",
     ],
     deps = [
+        ":channel_provider",
         ":compiler",
         ":debugging",
         ":keyvaluestore",
