@@ -56,20 +56,20 @@ static iree_status_t exchange_default_id(
   IREE_ASSERT_ARGUMENT(base_channel_provider);
   channel_provider_t* channel_provider =
       channel_provider_cast(base_channel_provider);
-  const std::string default_key("/");
+  const std::string default_key("default");
 
   IREE_TRACE_ZONE_BEGIN(z0);
   if (channel_provider->default_rank == 0) {
     std::vector value(id.data, id.data + id.data_length);
-    if (!channel_provider->kvs->set(default_key, value)) {
+    if (!channel_provider->kvs->Set(default_key, value)) {
       IREE_TRACE_ZONE_END(z0);
-      return iree_make_status(IREE_STATUS_INTERNAL, "kvs->set() failed");
+      return iree_make_status(IREE_STATUS_INTERNAL, "kvs->Set() failed");
     }
   } else {
     std::vector<uint8_t> value;
-    if (!channel_provider->kvs->get(default_key, value)) {
+    if (!channel_provider->kvs->Get(default_key, value)) {
       IREE_TRACE_ZONE_END(z0);
-      return iree_make_status(IREE_STATUS_INTERNAL, "kvs->get() failed");
+      return iree_make_status(IREE_STATUS_INTERNAL, "kvs->Get() failed");
     }
     assert(value.size() == id.data_length);
     memcpy(id.data, value.data(), id.data_length);
