@@ -431,6 +431,7 @@ struct ClientInstance {
   int32_t process_id() { return process_id_; }
   int32_t num_processes() { return num_processes_; }
   int32_t rank_offset() { return rank_offset_; }
+  KeyValueStore* key_value_store() { return kvs_.get(); }
 
   // ---------------------------------------------------------------------------
   // Subclass hooks.

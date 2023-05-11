@@ -15,9 +15,9 @@ namespace iree::pjrt {
 class KeyValueStore {
  public:
   virtual ~KeyValueStore();
-  virtual bool set(const std::string& key,
+  virtual bool Set(const std::string& key,
                    const std::vector<uint8_t>& value) = 0;
-  virtual bool get(const std::string& key, std::vector<uint8_t>& value) = 0;
+  virtual bool Get(const std::string& key, std::vector<uint8_t>& value) = 0;
 };
 
 }  // namespace iree::pjrt

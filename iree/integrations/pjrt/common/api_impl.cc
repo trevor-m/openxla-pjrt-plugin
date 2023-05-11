@@ -11,6 +11,8 @@
 
 #include "iree/base/tracing.h"
 #include "iree/hal/api.h"
+#include "iree/integrations/pjrt/common/channel_provider.h"
+#include "iree/integrations/pjrt/common/file_key_value_store.h"
 #include "iree/integrations/pjrt/common/iree_helpers.h"
 #include "iree/integrations/pjrt/common/tensor_utils.h"
 #include "xla/pjrt/compile_options.pb.h"
@@ -686,6 +688,13 @@ iree_status_t DeviceInstance::OpenDevice() {
   IREE_RETURN_IF_ERROR(
       iree_hal_semaphore_create(device(), 0ull, &transfer_timeline_));
 
+  // Setup the channel provider.
+  iree_hal_channel_provider_t* channel_provider = nullptr;
+  IREE_RETURN_IF_ERROR(channel_provider_create(
+      client_.host_allocator(), client_.key_value_store(), client_.process_id(),
+      client_.num_processes(), &channel_provider));
+  iree_hal_device_replace_channel_provider(device(), channel_provider);
+  iree_hal_channel_provider_release(channel_provider);
   return iree_ok_status();
 }
 
@@ -1035,6 +1044,15 @@ PJRT_Error* ClientInstance::Initialize() {
   if (!iree_status_is_ok(status)) {
     iree_status_fprint(stderr, status);
     return MakeError(status);
+  }
+
+  // Setup a key value store when there are multiple processes. A store
+  // is needed for the channel provider to exhange the default ID.
+  // Note that not all backends need a channel provider.
+  if (num_processes() > 1) {
+    // The clean up for the store directory should be done outside similarly
+    // to setting up a distributed key value store with an address.
+    kvs_ = std::make_unique<FileKeyValueStore>("/tmp/pjrt");
   }
 
   // TODO: Remove calls to iree_status_fprint once JAX properly reports

@@ -25,9 +25,11 @@ cc_library(
 cc_library(
     name = "keyvaluestore",
     srcs = [
+        "file_key_value_store.cc",
         "keyvaluestore.cc",
     ],
     hdrs = [
+        "file_key_value_store.h",
         "keyvaluestore.h",
     ],
 )
