@@ -1029,9 +1029,17 @@ void ClientInstance::BindApi(PJRT_Api* api) {
 }
 
 PJRT_Error* ClientInstance::Initialize() {
+  IREE_TRACE_SCOPE0("ClientInstance::Initialize()");
+
+  auto status = ReadSPMDInfoFromEnvVars();
+  if (!iree_status_is_ok(status)) {
+    iree_status_fprint(stderr, status);
+    return MakeError(status);
+  }
+
   // TODO: Remove calls to iree_status_fprint once JAX properly reports
   // initialization errors: https://github.com/google/jax/issues/13763
-  auto status = CreateDriver(&driver_);
+  status = CreateDriver(&driver_);
   if (!iree_status_is_ok(status)) {
     iree_status_fprint(stderr, status);
     return MakeError(status);
@@ -1051,6 +1059,25 @@ PJRT_Error* ClientInstance::Initialize() {
 
   // More initialization.
   return nullptr;
+}
+
+static int32_t ParseEnvI32(const char* env, int32_t default_value) {
+  const char* str = getenv(env);
+  if (!str || strlen(str) == 0) return default_value;
+  int32_t out_value = default_value;
+  if (!iree_string_view_atoi_int32(iree_make_cstring_view(str), &out_value)) {
+    return default_value;
+  } else {
+    return out_value;
+  }
+}
+
+// Overrides process information by IREE_SPMD_PROCID and IREE_SPMD_NPROCS.
+iree_status_t ClientInstance::ReadSPMDInfoFromEnvVars() {
+  num_processes_ = ParseEnvI32("IREE_SPMD_NPROCS", 1);
+  process_id_ = ParseEnvI32("IREE_SPMD_PROCID", 0);
+  rank_offset_ = ParseEnvI32("IREE_SPMD_RANK_OFFSET", 0);
+  return iree_ok_status();
 }
 
 iree_status_t ClientInstance::InitializeVM() {

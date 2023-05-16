@@ -427,6 +427,10 @@ struct ClientInstance {
   PJRT_Error* Compile(PJRT_Program* program, xla::CompileOptionsProto options,
                       LoadedExecutableInstance** executable);
 
+  int32_t process_id() { return process_id_; }
+  int32_t num_processes() { return num_processes_; }
+  int32_t rank_offset() { return rank_offset_; }
+
   // ---------------------------------------------------------------------------
   // Subclass hooks.
   // ---------------------------------------------------------------------------
@@ -456,6 +460,7 @@ struct ClientInstance {
   std::string cached_platform_version_;
 
  private:
+  iree_status_t ReadSPMDInfoFromEnvVars();
   iree_status_t InitializeCompiler();
   iree_status_t InitializeVM();
   iree_status_t PopulateDevices();
@@ -481,6 +486,13 @@ struct ClientInstance {
   // Waiting on the current value of |execution_timeline_| will drain all
   // scheduled work to date.
   uint64_t execution_timeline_ = 0ull;
+
+  // Global Device Topology.
+  // Each device in the client will get assign a rank, which is rank_offset +
+  // device_index.
+  int32_t num_processes_ = 1;
+  int32_t process_id_ = 0;
+  int32_t rank_offset_ = 0;
 };
 
 //===----------------------------------------------------------------------===//
