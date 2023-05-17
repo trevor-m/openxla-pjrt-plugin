@@ -16,6 +16,7 @@
 #include "iree/base/api.h"
 #include "iree/hal/api.h"
 #include "iree/integrations/pjrt/common/compiler.h"
+#include "iree/integrations/pjrt/common/keyvaluestore.h"
 #include "iree/integrations/pjrt/common/platform.h"
 #include "iree/modules/hal/module.h"
 #include "iree/vm/api.h"
@@ -493,6 +494,9 @@ struct ClientInstance {
   int32_t num_processes_ = 1;
   int32_t process_id_ = 0;
   int32_t rank_offset_ = 0;
+
+  // Key value store
+  std::unique_ptr<KeyValueStore> kvs_;
 };
 
 //===----------------------------------------------------------------------===//
