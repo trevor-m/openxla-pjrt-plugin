@@ -4,8 +4,8 @@
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef IREE_PJRT_PLUGIN_PJRT_KEYVALUESTORE_H_
-#define IREE_PJRT_PLUGIN_PJRT_KEYVALUESTORE_H_
+#ifndef IREE_PJRT_PLUGIN_PJRT_KEY_VALUE_STORE_H_
+#define IREE_PJRT_PLUGIN_PJRT_KEY_VALUE_STORE_H_
 
 #include <string>
 #include <vector>
@@ -22,4 +22,4 @@ class KeyValueStore {
 
 }  // namespace iree::pjrt
 
-#endif  // IREE_PJRT_PLUGIN_PJRT_KEYVALUESTORE_H_
+#endif  // IREE_PJRT_PLUGIN_PJRT_KEY_VALUE_STORE_H_
