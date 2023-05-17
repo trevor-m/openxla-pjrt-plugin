@@ -16,7 +16,7 @@
 #include "iree/base/api.h"
 #include "iree/hal/api.h"
 #include "iree/integrations/pjrt/common/compiler.h"
-#include "iree/integrations/pjrt/common/keyvaluestore.h"
+#include "iree/integrations/pjrt/common/key_value_store.h"
 #include "iree/integrations/pjrt/common/platform.h"
 #include "iree/modules/hal/module.h"
 #include "iree/vm/api.h"

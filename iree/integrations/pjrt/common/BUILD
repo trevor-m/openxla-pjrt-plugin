@@ -23,14 +23,14 @@ cc_library(
 )
 
 cc_library(
-    name = "keyvaluestore",
+    name = "key_value_store",
     srcs = [
         "file_key_value_store.cc",
-        "keyvaluestore.cc",
+        "key_value_store.cc",
     ],
     hdrs = [
         "file_key_value_store.h",
-        "keyvaluestore.h",
+        "key_value_store.h",
     ],
 )
 
@@ -43,7 +43,7 @@ cc_library(
         "channel_provider.h",
     ],
     deps = [
-        ":keyvaluestore",
+        ":key_value_store",
         "@iree_core//runtime/src/iree/base",
         "@iree_core//runtime/src/iree/base:tracing",
         "@iree_core//runtime/src/iree/hal",
@@ -79,7 +79,7 @@ iree_pjrt_cc_library(
         ":channel_provider",
         ":compiler",
         ":debugging",
-        ":keyvaluestore",
+        ":key_value_store",
         ":tensor_utils",
         "@iree_core//runtime/src/iree/base",
         "@iree_core//runtime/src/iree/base:tracing",
