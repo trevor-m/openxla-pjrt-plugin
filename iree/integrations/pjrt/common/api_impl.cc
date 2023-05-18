@@ -11,6 +11,7 @@
 
 #include "iree/base/tracing.h"
 #include "iree/hal/api.h"
+#include "iree/hal/utils/mpi_channel_provider.h"
 #include "iree/integrations/pjrt/common/channel_provider.h"
 #include "iree/integrations/pjrt/common/file_key_value_store.h"
 #include "iree/integrations/pjrt/common/iree_helpers.h"
@@ -689,9 +690,16 @@ iree_status_t DeviceInstance::OpenDevice() {
 
   // Setup the channel provider.
   iree_hal_channel_provider_t* channel_provider = nullptr;
-  IREE_RETURN_IF_ERROR(channel_provider_create(
-      client_.host_allocator(), client_.key_value_store(), client_.process_id(),
-      client_.num_processes(), &channel_provider));
+  if (iree_hal_mpi_is_configured()) {
+    IREE_RETURN_IF_ERROR(
+        iree_hal_mpi_channel_provider_create(client_.host_allocator(),
+                                             &channel_provider),
+        "creating MPI channel provider as detected in environment");
+  } else {
+    IREE_RETURN_IF_ERROR(channel_provider_create(
+        client_.host_allocator(), client_.key_value_store(),
+        client_.process_id(), client_.num_processes(), &channel_provider));
+  }
   iree_hal_device_replace_channel_provider(device(), channel_provider);
   iree_hal_channel_provider_release(channel_provider);
   return iree_ok_status();
@@ -1069,6 +1077,11 @@ PJRT_Error* ClientInstance::Initialize() {
   return nullptr;
 }
 
+static bool CheckEnvVar(const char* env) {
+  const char* str = getenv(env);
+  return str && (strlen(str) > 0);
+}
+
 static int32_t ParseEnvI32(const char* env, int32_t default_value) {
   const char* str = getenv(env);
   if (!str || strlen(str) == 0) return default_value;
@@ -1082,9 +1095,21 @@ static int32_t ParseEnvI32(const char* env, int32_t default_value) {
 
 // Overrides process information by IREE_SPMD_PROCID and IREE_SPMD_NPROCS.
 iree_status_t ClientInstance::ReadSPMDInfoFromEnvVars() {
-  num_processes_ = ParseEnvI32("IREE_SPMD_NPROCS", 1);
-  process_id_ = ParseEnvI32("IREE_SPMD_PROCID", 0);
-  rank_offset_ = ParseEnvI32("IREE_SPMD_RANK_OFFSET", 0);
+  // Check if OpenMPI is used first.
+  if (CheckEnvVar("OMPI_COMM_WORLD_SIZE")) {
+    num_processes_ = ParseEnvI32("OMPI_COMM_WORLD_SIZE", 1);
+    process_id_ = ParseEnvI32("OMPI_COMM_WORLD_RANK", 0);
+    // TODO: support multiple devices per client.
+    // For now, we only support a single device, and it is controlled by
+    // setting CUDA_VISIBLE_DEVICES to the rank.
+    rank_offset_ = process_id_;
+    setenv("CUDA_VISIBLE_DEVICES", std::to_string(process_id_).c_str(),
+           /*replace=*/1);
+  } else {
+    num_processes_ = ParseEnvI32("IREE_SPMD_NPROCS", 1);
+    process_id_ = ParseEnvI32("IREE_SPMD_PROCID", 0);
+    rank_offset_ = ParseEnvI32("IREE_SPMD_RANK_OFFSET", 0);
+  }
   return iree_ok_status();
 }
 
