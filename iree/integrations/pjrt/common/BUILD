@@ -84,6 +84,7 @@ iree_pjrt_cc_library(
         "@iree_core//runtime/src/iree/base",
         "@iree_core//runtime/src/iree/base:tracing",
         "@iree_core//runtime/src/iree/hal",
+        "@iree_core//runtime/src/iree/hal/utils:mpi_channel_provider",
         "@iree_core//runtime/src/iree/modules/hal",
         "@iree_core//runtime/src/iree/vm",
         "@iree_core//runtime/src/iree/vm/bytecode:module",
