@@ -56,6 +56,9 @@ static iree_status_t exchange_default_id(
   IREE_ASSERT_ARGUMENT(base_channel_provider);
   channel_provider_t* channel_provider =
       channel_provider_cast(base_channel_provider);
+
+  if (channel_provider->default_count == 1) return iree_ok_status();
+
   const std::string default_key("default");
 
   IREE_TRACE_ZONE_BEGIN(z0);
