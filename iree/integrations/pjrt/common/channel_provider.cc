@@ -85,14 +85,12 @@ const iree_hal_channel_provider_vtable_t channel_provider_vtable = {
     /*.destroy=*/channel_provider_destroy,
     /*.query_default_rank_and_count=*/query_default_rank_and_count,
     /*.exchange_default_id=*/exchange_default_id,
-    ///*.exchange_id_for_group=*/exchange_id_for_group,
 };
 
 iree_status_t channel_provider_create(
     iree_allocator_t host_allocator, iree::pjrt::KeyValueStore* kvs,
     int32_t default_rank, int32_t default_count,
     iree_hal_channel_provider_t** out_channel_provider) {
-  IREE_ASSERT_ARGUMENT(kvs);
   IREE_ASSERT_ARGUMENT(out_channel_provider);
   IREE_TRACE_ZONE_BEGIN(z0);
 
