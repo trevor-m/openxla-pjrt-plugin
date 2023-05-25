@@ -689,20 +689,8 @@ iree_status_t DeviceInstance::OpenDevice() {
   IREE_RETURN_IF_ERROR(
       iree_hal_semaphore_create(device(), 0ull, &transfer_timeline_));
 
-  // Setup the channel provider.
-  iree_hal_channel_provider_t* channel_provider = nullptr;
-  if (iree_hal_mpi_is_configured()) {
-    IREE_RETURN_IF_ERROR(
-        iree_hal_mpi_channel_provider_create(client_.host_allocator(),
-                                             &channel_provider),
-        "creating MPI channel provider as detected in environment");
-  } else {
-    IREE_RETURN_IF_ERROR(channel_provider_create(
-        client_.host_allocator(), client_.key_value_store(),
-        client_.process_id(), client_.num_processes(), &channel_provider));
-  }
-  iree_hal_device_replace_channel_provider(device(), channel_provider);
-  iree_hal_channel_provider_release(channel_provider);
+  iree_hal_device_replace_channel_provider(device(),
+                                           client_.channel_provider());
   return iree_ok_status();
 }
 
@@ -934,6 +922,9 @@ ClientInstance::~ClientInstance() {
   if (device_infos_) {
     iree_allocator_free(host_allocator_, device_infos_);
   }
+
+  iree_hal_channel_provider_release(channel_provider_);
+
   // Explicitly releasing vs using a ref so as to better control shut-down
   // ordering (bad shutdown ordering of the driver is a frequent cause of
   // bugs).
@@ -1054,13 +1045,26 @@ PJRT_Error* ClientInstance::Initialize() {
     return MakeError(status);
   }
 
-  // Setup a key value store when there are multiple processes. A store
-  // is needed for the channel provider to exhange the default ID.
-  // Note that not all backends need a channel provider.
-  if (num_processes() > 1) {
-    // The clean up for the store directory should be done outside similarly
-    // to setting up a distributed key value store with an address.
-    kvs_ = std::make_unique<FileKeyValueStore>("/tmp/pjrt");
+  // Setup the channel provider.
+  if (iree_hal_mpi_is_configured()) {
+    status = iree_hal_mpi_channel_provider_create(host_allocator(),
+                                                  &channel_provider_);
+  } else {
+    // Setup a key value store when there are multiple processes. A store
+    // is needed for the channel provider to exhange the default ID.
+    // Note that not all backends need a channel provider.
+    if (num_processes() > 1) {
+      // The clean up for the store directory should be done outside similarly
+      // to setting up a distributed key value store with an address.
+      kvs_ = std::make_unique<FileKeyValueStore>("/tmp/pjrt");
+    }
+    status = channel_provider_create(host_allocator(), key_value_store(),
+                                     process_id(), num_processes(),
+                                     &channel_provider_);
+  }
+  if (!iree_status_is_ok(status)) {
+    iree_status_fprint(stderr, status);
+    return MakeError(status);
   }
 
   // TODO: Remove calls to iree_status_fprint once JAX properly reports
