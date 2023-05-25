@@ -1104,11 +1104,7 @@ iree_status_t ClientInstance::ReadSPMDInfoFromEnvVars() {
     num_processes_ = ParseEnvI32("OMPI_COMM_WORLD_SIZE", 1);
     process_id_ = ParseEnvI32("OMPI_COMM_WORLD_RANK", 0);
     // TODO: support multiple devices per client.
-    // For now, we only support a single device, and it is controlled by
-    // setting CUDA_VISIBLE_DEVICES to the rank.
     rank_offset_ = process_id_;
-    setenv("CUDA_VISIBLE_DEVICES", std::to_string(process_id_).c_str(),
-           /*replace=*/1);
   } else {
     num_processes_ = ParseEnvI32("IREE_SPMD_NPROCS", 1);
     process_id_ = ParseEnvI32("IREE_SPMD_PROCID", 0);
@@ -1127,12 +1123,30 @@ iree_status_t ClientInstance::InitializeVM() {
 iree_status_t ClientInstance::PopulateDevices() {
   IREE_RETURN_IF_ERROR(iree_hal_driver_query_available_devices(
       driver_, host_allocator_, &device_info_count_, &device_infos_));
-  devices_.resize(device_info_count_);
-  for (iree_host_size_t i = 0; i < device_info_count_; ++i) {
-    // Note that we assume one driver per client here.
-    // But device is modeled with a driver in case if it ever becomes
-    // more heterogenous.
-    devices_[i] = new DeviceInstance(i, *this, driver_, &device_infos_[i]);
+
+  if (num_processes() > 1) {
+    // TODO: support multiple clients across multiple hosts.
+    // Currently, we only support multiple clients in a single host.
+    if (num_processes() != device_info_count_) {
+      return iree_make_status(IREE_STATUS_FAILED_PRECONDITION,
+                              "num_processes != device_info_count");
+    }
+
+    // TODO: support multiple devices for multiple clients.
+    // We only support one device per client for now so that the process ID
+    // is 1:1 mapped to the device index.
+    devices_.resize(1);
+    iree_host_size_t device_index = process_id();
+    devices_[0] = new DeviceInstance(device_index, *this, driver_,
+                                     &device_infos_[device_index]);
+  } else {
+    devices_.resize(device_info_count_);
+    for (iree_host_size_t i = 0; i < device_info_count_; ++i) {
+      // Note that we assume one driver per client here.
+      // But device is modeled with a driver in case if it ever becomes
+      // more heterogenous.
+      devices_[i] = new DeviceInstance(i, *this, driver_, &device_infos_[i]);
+    }
   }
 
   // For now, just make all devices addressable.
