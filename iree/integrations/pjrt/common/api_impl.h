@@ -422,6 +422,8 @@ struct ClientInstance {
 
   iree_vm_instance_t* vm_instance() { return vm_instance_.get(); }
 
+  iree_hal_channel_provider_t* channel_provider() { return channel_provider_; }
+
   // Compiles.
   // See TODOs in PJRT_Client_Compile.
   PJRT_Error* Compile(PJRT_Program* program,
@@ -474,6 +476,7 @@ struct ClientInstance {
   iree_host_size_t device_info_count_ = 0;
   std::vector<DeviceInstance*> devices_;
   std::vector<DeviceInstance*> addressable_devices_;
+  iree_hal_channel_provider_t* channel_provider_ = nullptr;
 
   // VM.
   iree::vm::ref<iree_vm_instance_t> vm_instance_;
