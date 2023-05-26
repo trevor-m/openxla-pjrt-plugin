@@ -1,7 +1,8 @@
 #!/bin/bash -x
 source ../.env.sh
 #export NCCL_DEBUG=INFO
-export CUDA_VISIBLE_DEVICES=0
+# No longer necessary to set since the device is now selected using the rank info.
+#export CUDA_VISIBLE_DEVICES=0
 export IREE_SPMD_NPROCS=2
 export IREE_SPMD_PROCID=0
 # Same as PROCID since we only run a single device for each process
