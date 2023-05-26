@@ -1129,7 +1129,8 @@ iree_status_t ClientInstance::PopulateDevices() {
     // Currently, we only support multiple clients in a single host.
     if (num_processes() != device_info_count_) {
       return iree_make_status(IREE_STATUS_FAILED_PRECONDITION,
-                              "num_processes != device_info_count");
+                              "num_processes(%d) != device_info_count(%ld)",
+                              num_processes(), device_info_count_);
     }
 
     // TODO: support multiple devices for multiple clients.
