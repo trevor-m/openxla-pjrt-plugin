@@ -446,10 +446,12 @@ void BufferInstance::BindApi(PJRT_Api* api) {
   };
   api->PJRT_Buffer_IsOnCpu =
       +[](PJRT_Buffer_IsOnCpu_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Buffer_IsOnCpu");
     args->is_on_cpu = BufferInstance::Unwrap(args->buffer)->is_on_cpu();
     return nullptr;
   };
   api->PJRT_Buffer_Device = +[](PJRT_Buffer_Device_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Buffer_Device");
     args->device = BufferInstance::Unwrap(args->buffer)->device();
     return nullptr;
   };
@@ -463,6 +465,7 @@ void BufferInstance::BindApi(PJRT_Api* api) {
   // check for aliases.
   api->PJRT_Buffer_UnsafePointer =
       +[](PJRT_Buffer_UnsafePointer_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Buffer_UnsafePointer");
     BufferInstance* buffer = BufferInstance::Unwrap(args->buffer);
     iree_hal_buffer_t* hal_buffer =
         iree_hal_buffer_view_buffer(buffer->buffer_view());
@@ -604,17 +607,20 @@ DeviceDescription::~DeviceDescription() = default;
 void DeviceDescription::BindApi(PJRT_Api* api) {
   api->PJRT_DeviceDescription_Id =
       +[](PJRT_DeviceDescription_Id_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_DeviceDescription_Id");
     args->id = DeviceDescription::Unwrap(args->device_description)->client_id();
     return nullptr;
   };
   api->PJRT_DeviceDescription_ProcessIndex =
       +[](PJRT_DeviceDescription_ProcessIndex_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_DeviceDescription_ProcessIndex");
     args->process_index =
         DeviceDescription::Unwrap(args->device_description)->process_index();
     return nullptr;
   };
   api->PJRT_DeviceDescription_Attributes =
       +[](PJRT_DeviceDescription_Attributes_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_DeviceDescription_Attributes");
     // TODO: Implement something.
     args->num_attributes = 0;
     args->attributes = nullptr;
@@ -622,6 +628,7 @@ void DeviceDescription::BindApi(PJRT_Api* api) {
   };
   api->PJRT_DeviceDescription_Kind =
       +[](PJRT_DeviceDescription_Kind_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_DeviceDescription_Kind");
     auto sv =
         DeviceDescription::Unwrap(args->device_description)->kind_string();
     args->device_kind = sv.data();
@@ -630,6 +637,7 @@ void DeviceDescription::BindApi(PJRT_Api* api) {
   };
   api->PJRT_DeviceDescription_DebugString =
       +[](PJRT_DeviceDescription_DebugString_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_DeviceDescription_DebugString");
     auto sv =
         DeviceDescription::Unwrap(args->device_description)->debug_string();
     args->debug_string = sv.data();
@@ -638,6 +646,7 @@ void DeviceDescription::BindApi(PJRT_Api* api) {
   };
   api->PJRT_DeviceDescription_ToString =
       +[](PJRT_DeviceDescription_ToString_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_DeviceDescription_ToString");
     auto sv =
         DeviceDescription::Unwrap(args->device_description)->user_string();
     args->to_string = sv.data();
@@ -655,18 +664,21 @@ DeviceInstance::~DeviceInstance() = default;
 void DeviceInstance::BindApi(PJRT_Api* api) {
   api->PJRT_Device_IsAddressable =
       +[](PJRT_Device_IsAddressable_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_DeviceInstance_IsAddressable");
     args->is_addressable =
         DeviceInstance::Unwrap(args->device)->is_addressable();
     return nullptr;
   };
   api->PJRT_Device_LocalHardwareId =
       +[](PJRT_Device_LocalHardwareId_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_DeviceInstance_LocalHardwareId");
     args->local_hardware_id =
         DeviceInstance::Unwrap(args->device)->local_hardware_id();
     return nullptr;
   };
   api->PJRT_Device_GetDescription =
       +[](PJRT_Device_GetDescription_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_DeviceInstance_GetDescription");
     args->device_description = reinterpret_cast<PJRT_DeviceDescription*>(
         DeviceInstance::Unwrap(args->device)->device_description());
     return nullptr;
@@ -941,6 +953,7 @@ void ClientInstance::BindApi(PJRT_Api* api) {
   };
   api->PJRT_Client_PlatformName =
       +[](PJRT_Client_PlatformName_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Client_PlatformName");
     auto* client = ClientInstance::Unwrap(args->client);
     args->platform_name = client->cached_platform_name().data();
     args->platform_name_size = client->cached_platform_name().size();
@@ -955,6 +968,7 @@ void ClientInstance::BindApi(PJRT_Api* api) {
   };
   api->PJRT_Client_PlatformVersion =
       +[](PJRT_Client_PlatformVersion_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Client_PlatformVersion");
     auto* client = ClientInstance::Unwrap(args->client);
     args->platform_version = client->cached_platform_version().data();
     args->platform_version_size = client->cached_platform_version().size();
@@ -962,6 +976,7 @@ void ClientInstance::BindApi(PJRT_Api* api) {
   };
   api->PJRT_Client_Devices =
       +[](PJRT_Client_Devices_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Client_Devices");
     auto& devices = ClientInstance::Unwrap(args->client)->devices();
     args->devices = const_cast<PJRT_Device**>(
         reinterpret_cast<PJRT_Device* const*>(devices.data()));
@@ -970,6 +985,7 @@ void ClientInstance::BindApi(PJRT_Api* api) {
   };
   api->PJRT_Client_AddressableDevices =
       +[](PJRT_Client_AddressableDevices_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Client_AddressableDevices");
     auto& devices = ClientInstance::Unwrap(args->client)->addressable_devices();
     args->addressable_devices = const_cast<PJRT_Device**>(
         reinterpret_cast<PJRT_Device* const*>(devices.data()));
@@ -978,6 +994,7 @@ void ClientInstance::BindApi(PJRT_Api* api) {
   };
   api->PJRT_Client_LookupDevice =
       +[](PJRT_Client_LookupDevice_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Client_LookupDevice");
     auto& devices = ClientInstance::Unwrap(args->client)->devices();
     size_t id_as_size = args->id;
     if (id_as_size >= devices.size()) {
@@ -1017,6 +1034,7 @@ void ClientInstance::BindApi(PJRT_Api* api) {
   };
   api->PJRT_Client_DefaultDeviceAssignment =
       +[](PJRT_Client_DefaultDeviceAssignment_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Client_DefaultDeviceAssignment");
     // TODO: Something sensible.
     for (size_t i = 0; i < args->default_assignment_size; ++i) {
       args->default_assignment[i] = 0;
@@ -1471,12 +1489,14 @@ void ExecutableImage::BindApi(PJRT_Api* api) {
   };
   api->PJRT_Executable_NumPartitions =
       +[](PJRT_Executable_NumPartitions_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Executable_NumPartitions");
     // This should be updated once iree supports partitioning.
     args->num_partitions = 1;
     return nullptr;
   };
   api->PJRT_Executable_NumReplicas =
       +[](PJRT_Executable_NumReplicas_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_Executable_NumReplicas");
     // This should be updated once iree supports replicas.
     args->num_replicas = 1;
     return nullptr;
@@ -1512,6 +1532,7 @@ void LoadedExecutableInstance::BindApi(PJRT_Api* api) {
   };
   api->PJRT_LoadedExecutable_AddressableDevices =
       +[](PJRT_LoadedExecutable_AddressableDevices_Args* args) -> PJRT_Error* {
+    IREE_TRACE_SCOPE0("PJRT_LoadedExecutable_AddressableDevices");
     auto& devices = LoadedExecutableInstance::Unwrap(args->executable)
                         ->addressable_devices();
     args->addressable_devices = const_cast<PJRT_Device**>(
