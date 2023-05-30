@@ -153,8 +153,8 @@ class DeviceDescription {
   // revisited if ever supporting re-scanning (but many things would seem to
   // need updates then).
   int client_id() { return client_id_; }
-  // Not yet implemented but plumbed through.
-  int process_index() { return 0; }
+  // Each client is mapped to a process.
+  int process_index() { return client_id_; }
 
   // Various debug descriptions of the device. Backing string data owned by
   // the device description.
