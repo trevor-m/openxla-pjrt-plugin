@@ -947,7 +947,9 @@ void ClientInstance::BindApi(PJRT_Api* api) {
   };
   api->PJRT_Client_ProcessIndex =
       +[](PJRT_Client_ProcessIndex_Args* args) -> PJRT_Error* {
-    args->process_index = 0;
+    IREE_TRACE_SCOPE0("PJRT_Client_ProcessIndex");
+    auto* client = ClientInstance::Unwrap(args->client);
+    args->process_index = client->process_id();
     return nullptr;
   };
   api->PJRT_Client_PlatformVersion =
