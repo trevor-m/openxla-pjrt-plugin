@@ -1126,6 +1126,13 @@ iree_status_t ClientInstance::PopulateDevices() {
   IREE_RETURN_IF_ERROR(iree_hal_driver_query_available_devices(
       driver_, host_allocator_, &device_info_count_, &device_infos_));
 
+  devices_.resize(device_info_count_);
+  for (iree_host_size_t i = 0; i < device_info_count_; ++i) {
+    // Note that we assume one driver per client here.
+    // But device is modeled with a driver in case if it ever becomes
+    // more heterogenous.
+    devices_[i] = new DeviceInstance(i, *this, driver_, &device_infos_[i]);
+  }
   if (num_processes() > 1) {
     // TODO: support multiple clients across multiple hosts.
     // Currently, we only support multiple clients in a single host.
@@ -1138,25 +1145,17 @@ iree_status_t ClientInstance::PopulateDevices() {
     // TODO: support multiple devices for multiple clients.
     // We only support one device per client for now so that the process ID
     // is 1:1 mapped to the device index.
-    devices_.resize(1);
+    addressable_devices_.resize(1);
     iree_host_size_t device_index = process_id();
-    devices_[0] = new DeviceInstance(device_index, *this, driver_,
-                                     &device_infos_[device_index]);
+    addressable_devices_[0] = devices_[device_index];
   } else {
-    devices_.resize(device_info_count_);
-    for (iree_host_size_t i = 0; i < device_info_count_; ++i) {
-      // Note that we assume one driver per client here.
-      // But device is modeled with a driver in case if it ever becomes
-      // more heterogenous.
-      devices_[i] = new DeviceInstance(i, *this, driver_, &device_infos_[i]);
+    // For now, just make all devices addressable.
+    addressable_devices_.reserve(devices_.size());
+    for (auto* device : devices_) {
+      addressable_devices_.push_back(device);
     }
   }
 
-  // For now, just make all devices addressable.
-  addressable_devices_.reserve(devices_.size());
-  for (auto* device : devices_) {
-    addressable_devices_.push_back(device);
-  }
   return iree_ok_status();
 }
 
