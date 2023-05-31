@@ -994,9 +994,10 @@ void ClientInstance::BindApi(PJRT_Api* api) {
 
     // Read compilation options.
     xla::CompileOptionsProto options;
-    if (!options.ParseFromArray(args->compile_options, args->compile_options_size)) {
-      return MakeError(iree_make_status(
-        IREE_STATUS_INTERNAL, "could not parse compilation options"));
+    if (!options.ParseFromArray(args->compile_options,
+                                args->compile_options_size)) {
+      return MakeError(iree_make_status(IREE_STATUS_INTERNAL,
+                                        "could not parse compilation options"));
     }
 
     auto* error = client->Compile(args->program, options, &executable);
@@ -1118,7 +1119,9 @@ PJRT_Error* ClientInstance::Compile(PJRT_Program* program,
 
     // Set flags.
     int num_partitions = options.executable_build_options().num_partitions();
-    job->SetFlag(absl::StrCat("--openxla-partitioner-gspmd-num-partitions=", num_partitions).c_str());
+    job->SetFlag(absl::StrCat("--openxla-partitioner-gspmd-num-partitions=",
+                              num_partitions)
+                     .c_str());
 
     if (artifact_tx) {
       artifact_tx->WriteArtifact(
