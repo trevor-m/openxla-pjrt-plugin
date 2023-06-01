@@ -22,7 +22,7 @@
 #include "iree/vm/api.h"
 #include "iree/vm/bytecode/module.h"
 #include "xla/pjrt/c/pjrt_c_api.h"
-#include "xla/pjrt/compile_options.pb.h"
+#include "xla/pjrt/pjrt_executable.h"
 #include "xla/shape_util.h"
 
 namespace iree::pjrt {
@@ -427,7 +427,7 @@ struct ClientInstance {
 
   // Compiles.
   // See TODOs in PJRT_Client_Compile.
-  PJRT_Error* Compile(PJRT_Program* program, xla::CompileOptionsProto options,
+  PJRT_Error* Compile(PJRT_Program* program, xla::CompileOptions options,
                       LoadedExecutableInstance** executable);
 
   int32_t process_id() { return process_id_; }
